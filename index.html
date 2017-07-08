@@ -1,0 +1,344 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <title>phpEsAdmin</title>
+    <script type="text/javascript" src="zepto.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <p class="header_line"></p>
+        <div class="wrap">
+            <h1>phpEsAdmin</h1>
+        </div>
+    </header>
+    <div class="blank_header"></div>
+    <div class="container wrap">
+        <div class="sidebar">
+            <h2>
+                <select id="hosts"></select>
+            </h2>
+            <div class="menu">
+                <dl></dl>
+            </div>
+        </div>
+        <div class="content">
+            <div class="content_title">...</div>
+            <ul class="content_nav">
+                <li class="hover" id="nav_fields" nav="fields">结构</li>
+                <li nav="query" id="nav_query" nav="query">浏览</li>
+                <li nav="dsl" id="nav_dsl" nav="dsl">DSL</li>
+                <li nav="search" id="nav_search" nav="search">搜索</li>
+            </ul>
+            <div class="content_box">
+                <div class="result_box" id="fields_box" style="display: block;">
+                    <table class="data_table">
+                        <thead>
+                            <tr>
+                                <th>字段</th>
+                                <th>类型</th>
+                                <th>关键字</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="result_box" id="query_box">
+                    <div class="rawRequestBox">
+                        <h4>查询原始语句</h4>
+                        <pre style="display:none;"></pre>
+                    </div>
+                    <div class="rawResultBox">
+                        <h4>结果原始语句</h4>
+                        <pre style="display:none;"></pre>
+                    </div>
+                    <div style="overflow:auto;">
+                        <table class="data_table">
+                        </table>
+                    </div>
+                    <div id="page"></div>
+                </div>
+                <div class="result_box" id="dsl_box">
+                    <textarea></textarea>
+                    <input type="button" class="submit" value="执行" />
+                    <pre style="display:none;"></pre>
+                </div>
+                <div class="result_box" id="search_box">
+                    <p>IN, NOT IN, BETWEEN多条件需以逗号分隔</p>
+                    <p>&nbsp;</p>
+                    <div class="selectFieldsBox">
+                        <h4>选择查询字段</h4>
+                        <div style="display:none;"></div>
+                    </div>
+                    <table class="data_table">
+                        <thead>
+                            <tr>
+                                <th>字段</th>
+                                <th>类型</th>
+                                <th>关键字</th>
+                                <th>运算符</th>
+                                <th>值</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5"><input type="button" class="submit" value="执行" /></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>Powered By phpEsAdmin</footer>
+</body>
+<script type="text/javascript">
+    var mapping;
+    var host;
+    var index;
+    var type;
+    var currentPage = 1;
+    var searchStr = '';
+    var selectFields = '';
+    var dslStr = '';
+
+    $(function () {
+        init('');
+
+        $('.menu').on('click', 'dt', function () {
+            $(this).parent('dl').addClass('open').siblings().removeClass('open');
+        })
+
+        $('.menu').on('click', 'dd', function () {
+            if ($(this).hasClass('on')) {
+                return false;
+            }
+            $('.menu dd').removeClass('on');
+            $(this).addClass('on');
+            index = $(this).parent('dl').find('dt').html();
+            type = $(this).html();
+            showTitle();
+            selectNav($('#nav_fields'))
+        })
+
+        $('#hosts').change(function () {
+            host = $(this).val();
+            init(host);
+        })
+
+        $('.content_nav').on('click', 'li', function () {
+            selectNav($(this));
+        })
+
+        $('#search_box .submit').click(function () {
+            var str = '';
+            $('#search_box tbody tr').each(function (x, y) {
+                if ($(y).find('input').val().length > 0) {
+                    var c = new Object;
+                    var field = $(y).find('td').eq(0).html();
+                    var operator = $(y).find('select').val();
+                    var value = $(y).find('input').val();
+                    str += '["' + field + '","' + operator + '","' + value + '"],';
+                }
+            })
+            searchStr = '[' + str.substring(0, str.length - 1) + ']';
+
+            selectFields = '';
+            $('.selectFieldsBox input').each(function (x, y) {
+                if ($(y).is(':checked') == true) {
+                    selectFields += $(y).val() + ',';
+                }
+            })
+            selectFields.substring(0, selectFields.length - 1);
+
+            selectNav($('#nav_query'));
+        })
+
+        $('#dsl_box .submit').click(function () {
+            dslStr = $('#dsl_box textarea').val();
+            if (dslStr.length == 0) {
+                return false;
+            }
+            $.post('es.php?action=getDsl', { 'host': host, 'dsl': dslStr }, function (r) {
+                $('#dsl_box pre').html(JSON.stringify(r, undefined, 2));
+                $('#dsl_box pre').show();
+            }, 'json');
+        })
+
+        $('.result_box h4').click(function () {
+            $(this).next('pre').toggle();
+            $(this).next('div').toggle();
+        })
+    })
+
+    function init(host) {
+        host || getHosts();
+
+        setTimeout(function () {
+            showIndexs();
+        }, 1000)
+
+        setTimeout(function () {
+            $('.menu dl').eq(0).addClass('open');
+            index = $('.menu dt').eq(0).html();
+            $('.menu dd').eq(0).addClass('on');
+            type = $('.menu dd').eq(0).html();
+            showTitle();
+        }, 2000)
+
+        setTimeout(function () {
+            showFields();
+        }, 2001)
+    }
+
+    function getHosts() {
+        $.get('es.php?action=getHosts', function (r) {
+            var html = '';
+            $(r).each(function (x, y) {
+                html += '<option selected="selected" value="' + y + '">' + y + '</option>';
+            })
+            $('#hosts').html(html);
+        }, 'json');
+    }
+
+    function showIndexs() {
+        host = $('#hosts').val();
+        $.post('es.php?action=getMapping', { 'host': host }, function (r) {
+            mapping = r;
+            var html = '';
+            for (var index in r) {
+                html += '<dl><dt>' + index + '</dt>';
+                for (var type in r[index]) {
+                    html += '<dd>' + type + '</dd>';
+                }
+                html += '</dl>';
+            }
+            $('.menu').html(html);
+        }, 'json');
+    }
+
+    function showFields() {
+        var fields = mapping[index][type];
+        var html = '';
+        for (var field in fields) {
+            html += '<tr><td>' + fields[field]['field'] + '</td><td>' + fields[field]['type'] + '</td><td>' + fields[field]['keyword'] + '</td></tr>';
+        }
+        $('#fields_box tbody').html(html);
+    }
+
+    function showTitle() {
+        var html = host + ' -> ' + index + ' -> ' + type;
+        $('.content_title').html(html);
+    }
+
+    function showQuery() {
+        $.post('es.php?action=getQuery', { 'host': host + '/' + index + '/' + type, 'search': searchStr, 'select': selectFields, 'page': currentPage }, function (res) {
+            r = res.result;
+            var title = '<thead><tr>';
+            for (var thead in r['lists'][0]) {
+                title += '<td>' + thead + '</td>';
+            }
+            title += '</tr></thead>';
+            var html = title + '<tbody>';
+            $(r.lists).each(function (x, y) {
+                html += '<tr>';
+                for (var field in y) {
+                    html += '<td>' + y[field] + '</td>';
+                }
+                html += '</tr>';
+            })
+            $('#query_box .data_table').html(html);
+            var rawRequestJson = eval('(' + res.rawRequest + ')');
+            var rawResultJson = eval('(' + res.rawResult + ')');
+            $('#query_box .rawRequestBox pre').html(JSON.stringify(rawRequestJson, undefined, 2));
+            $('#query_box .rawResultBox pre').html(JSON.stringify(rawResultJson, undefined, 2));
+            displayPage('#page', 'goPage', 'goPage', r.totalPages, r.currentPage, r.total);
+        }, 'json');
+    }
+
+    function showSearch() {
+        var fields = mapping[index][type];
+        var html = '';
+        var fieldsStr = '';
+        var operator = '<td><select><option value="equal">=</option><option value="notequal">!=</option><option value="like">LIKE</option><option value="in">IN (...)</option><option value="notin">NOT IN (...)</option><option value="between">BETWEEN</option></select></td>';
+        for (var field in fields) {
+            html += '<tr><td>' + fields[field]['field'] + '</td><td>' + fields[field]['type'] + '</td><td>' + fields[field]['keyword'] + '</td>' + operator + '<td><input type="text"></td></tr>';
+            fieldsStr += '<label><input type="checkbox" name="fields[]" value="' + fields[field]['field'] + '" />' + fields[field]['field'] + '</label>';
+        }
+        $('#search_box tbody').html(html);
+        $('#search_box .selectFieldsBox div').html(fieldsStr);
+    }
+
+    function selectNav(navObj) {
+        var nav = $(navObj).attr('nav');
+        $(navObj).addClass('hover').siblings().removeClass('hover');
+        $('#' + nav + '_box').show().siblings().hide();
+
+        if (nav == 'fields') {
+            showFields()
+        } else if (nav == 'query') {
+            showQuery();
+        } else if (nav == 'dsl') {
+
+        } else if (nav == 'search') {
+            showSearch();
+        }
+
+        // 重置搜索条件
+        searchStr = '';
+        selectFields = '';
+        currentPage = 1;
+        $('#query_box .rawRequestBox pre,#query_box .rawResultBox pre').hide();
+    }
+
+    function goPage(p) {
+        currentPage = p;
+        showQuery();
+    }
+
+    /**
+     * divObj:显示翻页的div，默认body。如：#pageDiv
+     * inputId:跳转页面的id，默认goPage。如：goPage
+     * js:点击过之后执行js的方法名。默认query。如：query
+     * records:总页数，默认1。
+     * total：总记录数，默认0。
+     * page：当前页，默认1。
+     */
+    function displayPage(divObj, inputId, js, records, page, total) {
+        //设置默认值     
+        divObj = divObj || "body";
+        inputId = inputId || "goPage";
+        js = js || "query";
+        records = parseInt(records) || 1;
+        total = parseInt(total) || 0;
+        page = parseInt(page) || 1;
+        var str = "共&ensp;<span name='total'>" + total + "</span>&ensp;条数据";
+        str += "&ensp;当前第&ensp;<span name='currentPage'>" + page + "</span>&ensp;页";
+        str += "&ensp;共&ensp;<span name='totalPage'>" + records + "</span>&ensp;页";
+        str += "&ensp;<a href='javascript:void(0)' onclick='" + js + "(1)'>首页</a>";
+        if (page > 1) {
+            str += "&ensp;<a href='javascript:void(0)' onclick='" + js + "(" + (page - 1) + ")'>上一页</a>";
+        } else {
+            str += "&ensp;<a>上一页</a>";
+        }
+        if (page < records) {
+            str += "&ensp;<a href='javascript:void(0)' onclick='" + js + "(" + (page + 1) + ")'>下一页</a>";
+        } else {
+            str += "&ensp;<a>下一页</a>";
+        }
+        str += "&ensp;<a href='javascript:void(0)' onclick='" + js + "(" + records + ")'>尾页</a>";
+        str += "&ensp;跳转到&ensp;<input type='number' min=1 max=" + records + " id='" + inputId + "' value=" + page + " style='width:40px'/>";
+        str += "&ensp;<input type='button' value='go' onclick='var num=$(\"#" + inputId + "\").val();" + js + "(num)'/>";
+        $(divObj).empty();
+        $(divObj).append(str);
+    }
+
+</script>
+
+</html>
