@@ -71,7 +71,7 @@
                     <p>IN, NOT IN, BETWEEN多条件需以逗号分隔</p>
                     <p>&nbsp;</p>
                     <div class="selectFieldsBox">
-                        <h4>选择查询字段</h4>
+                        <h4>查询字段级及排序</h4>
                         <div style="display:none;"></div>
                     </div>
                     <table class="data_table">
@@ -106,6 +106,7 @@
     var currentPage = 1;
     var searchStr = '';
     var selectFields = '';
+    var sortStr = '';
     var dslStr = '';
 
     $(function () {
@@ -156,6 +157,10 @@
                 }
             })
             selectFields.substring(0, selectFields.length - 1);
+
+            if ($('.sortField').val() != '') {
+                sortStr = $('.sortField').val() + ',' + $('.sortBy').val();
+            }
 
             selectNav($('#nav_query'));
         })
@@ -238,7 +243,7 @@
     }
 
     function showQuery() {
-        $.post('es.php?action=getQuery', { 'host': host + '/' + index + '/' + type, 'search': searchStr, 'select': selectFields, 'page': currentPage }, function (res) {
+        $.post('es.php?action=getQuery', { 'host': host + '/' + index + '/' + type, 'search': searchStr, 'select': selectFields, 'sort': sortStr, 'page': currentPage }, function (res) {
             r = res.result;
             var title = '<thead><tr>';
             for (var thead in r['lists'][0]) {
@@ -266,11 +271,15 @@
         var fields = mapping[index][type];
         var html = '';
         var fieldsStr = '';
+        var sortStr = '';
         var operator = '<td><select><option value="equal">=</option><option value="notequal">!=</option><option value="like">LIKE</option><option value="in">IN (...)</option><option value="notin">NOT IN (...)</option><option value="between">BETWEEN</option></select></td>';
         for (var field in fields) {
             html += '<tr><td>' + fields[field]['field'] + '</td><td>' + fields[field]['type'] + '</td><td>' + fields[field]['keyword'] + '</td>' + operator + '<td><input type="text"></td></tr>';
             fieldsStr += '<label><input type="checkbox" name="fields[]" value="' + fields[field]['field'] + '" />' + fields[field]['field'] + '</label>';
+            sortStr += '<option value="' + fields[field]['field'] + '">' + fields[field]['field'] + '</option>';
         }
+        fieldsStr += '<div class="sortBox">查询排序：<select class="sortField"><option value="">----</option>' + sortStr + '</select><select class="sortBy"><option value="DESC">DESC</option><option value="ASC">ASC</option></select></div>';
+
         $('#search_box tbody').html(html);
         $('#search_box .selectFieldsBox div').html(fieldsStr);
     }
@@ -293,6 +302,7 @@
         // 重置搜索条件
         searchStr = '';
         selectFields = '';
+        sortStr = '';
         currentPage = 1;
         $('#query_box .rawRequestBox pre,#query_box .rawResultBox pre').hide();
     }

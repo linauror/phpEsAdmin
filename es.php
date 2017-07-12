@@ -59,6 +59,12 @@ function getQuery()
         }
     }
 
+    $sort = isset($_POST['sort']) ? $_POST['sort'] : '';
+    if ($sort) {
+        $sortArr = explode(',', $sort);
+        $ESQueryBuilder->orderBy($sortArr[0], $sortArr[1]);
+    }
+
     $lists = $ESQueryBuilder->getLists();
     exit(json_encode(['result' => $lists, 'rawRequest' => $ESQueryBuilder->getRawRequest(), 'rawResult' => $ESQueryBuilder->getRawResult()]));
 }

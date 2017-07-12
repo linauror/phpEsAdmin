@@ -59,7 +59,7 @@ footer { font-size: 12px; text-align: center; color: #ccc; padding-bottom: 30px;
 .data_table td, .data_table th { padding: 8px 15px; font-weight: normal; border-bottom: 1px solid #e7e7eb; text-align: left; white-space: nowrap; border: 1px solid #e7e7eb;}
 .data_table thead tr { background: #f4f5f9;}
 .data_table tr:hover {background: #f9f9f9;}
-.data_table input, .data_table select {height: 25px; line-height: 25px; border: 1px solid #e7e7eb;}
+.data_table input, .data_table select,.sortBox select {height: 25px; line-height: 25px; border: 1px solid #e7e7eb;}
 .data_table input { width: 90%; padding: 1px 3px;}
 .result_box .submit {width: 150px; height: 40px; cursor: pointer; font-size: 14px; border-radius: 3px; border: 1px solid #e7e7eb; background: #f4f5f9; color: #000;}
 
@@ -73,6 +73,8 @@ footer { font-size: 12px; text-align: center; color: #ccc; padding-bottom: 30px;
 .result_box { margin-top: 20px; margin-bottom: 20px; display: none;}
 .result_box h4 { background: #f4f5f9; border: 1px solid #e7e7eb; border-radius: 3px; padding: 3px 5px; cursor: pointer; margin-bottom: 5px;}
 .result_box div pre, .result_box div div, #dsl_box pre{ background: #f1f1f1; padding: 1em; border-radius: 3px; word-wrap: break-word; word-break: break-all; margin: 0 0 5px 0;}
+.result_box div .sortBox { padding-left: 0;}
+.result_box div .sortBox select { margin-right: 10px;}
 #dsl_box pre { margin-top: 5px;}
 .result_box div div label { margin-right: 15px; margin-bottom: 5px; display: inline-block; cursor: pointer;}
 .result_box div div label input{ margin-right: 2px; position: relative; top: 2px;}
