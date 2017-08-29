@@ -190,7 +190,7 @@ class ESQueryBuilder
      */
     public function betweenWhere($field, $min, $max)
     {
-        $this->queryArr['query']['bool']['must'][]['range'] = [$this->isKeyword($field) => ['gte' => $min, 'lt' => $max]];
+        $this->queryArr['query']['bool']['must'][]['range'] = [$this->isKeyword($field) => ['gte' => $min, 'lte' => $max]];
         return $this;
     }
 
