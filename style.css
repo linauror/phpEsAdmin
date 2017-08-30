@@ -28,7 +28,7 @@ footer { font-size: 12px; text-align: center; color: #ccc; padding-bottom: 30px;
 .container{margin:0 auto 30px; border:1px solid #d9dadc; background:#fff; overflow:hidden;}
 .sidebar {margin-bottom: -9999px; padding-bottom: 9999px; width: 250px; position: fixed;}
 .sidebar h2 { height: 50px; line-height: 50px; font-size: 16px; color: #8d8d8d; padding-left: 20px; border-bottom: 1px solid #e7e7eb;}
-.sidebar h2 select {height: 32px; line-height: 32px; border: 1px solid #e7e7eb;}
+.sidebar h2 select {height: 32px; line-height: 32px; border: 1px solid #e7e7eb; width: 200px;}
 .menu dl {line-height: 40px; border-bottom: 1px solid #e7e7eb;}
 .menu dl dd {display: hidden; overflow: hidden;}
 .menu dl dt,.menu dl dd {cursor: pointer;}
