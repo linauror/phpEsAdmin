@@ -341,6 +341,7 @@ class ESQueryBuilder
         $_result = ['total' => $result['hits']['total'], 'totalPages' => $totalPages, 'pageSize' => $this->pageSize, 'currentPage' => $this->page, 'lists' => []];
         if ($_result['total']) {
             foreach ($result['hits']['hits'] as $line) {
+                $line['_source']['_id'] = $line['_id'];
                 $_result['lists'][] = $line['_source'];
             }
         }
@@ -439,6 +440,16 @@ class ESQueryBuilder
             $last = array_merge($addon, $_last);
             $result[] = $last;
         }
+
+        return $result;
+    }
+
+    /**
+     * 更新数据
+     */
+    public function update($id = '', $data = [])
+    {
+        $result = $this->doRequest($this->baseUrl . '/' . $id . '/_update', json_encode(['doc' => $data]));
 
         return $result;
     }
