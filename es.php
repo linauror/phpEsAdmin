@@ -79,3 +79,16 @@ function getDsl()
 
     exit($result);
 }
+
+function update()
+{
+    $host = $_POST['host'];
+    $id = $_POST['id'];
+    $field = $_POST['field'];
+    $value = $_POST['value'];
+    $ESQueryBuilder = new ESQueryBuilder();
+    $ESQueryBuilder->init($host);
+    $result = $ESQueryBuilder->update($id, [$field => $value]);
+
+    exit($result);
+}
