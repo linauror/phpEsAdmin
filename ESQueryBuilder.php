@@ -468,7 +468,7 @@ class ESQueryBuilder
         foreach($result as $index => $v) {
             foreach($v['mappings'] as $type => $vv) {
                 foreach($vv['properties'] as $field => $vvv) {
-                    if (in_array($field, ['aggs', 'query'])) {
+                    if (in_array($field, ['aggs', 'query']) || empty($vvv['type'])) {
                         continue;
                     }
                     $mapping[$index][$type][$field] = ['field' => $field, 'type' => $vvv['type'], 'keyword' => isset($vvv['fields']['keyword']) ? 'Y' : 'N'];
