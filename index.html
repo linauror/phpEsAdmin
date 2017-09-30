@@ -103,6 +103,7 @@
     var host;
     var index;
     var type;
+    var fullhost;
     var currentPage = 1;
     var searchStr = '';
     var selectFields = '';
@@ -170,7 +171,7 @@
             if (dslStr.length == 0) {
                 return false;
             }
-            $.post('es.php?action=getDsl', { 'host': host, 'dsl': dslStr }, function (r) {
+            $.post('es.php?action=getDsl', { 'host': fullhost, 'dsl': dslStr }, function (r) {
                 $('#dsl_box pre').html(JSON.stringify(r, undefined, 2));
                 $('#dsl_box pre').show();
             }, 'json');
@@ -191,7 +192,7 @@
             var new_str = prompt('请输入需要修改的内容', str);
             if (new_str != null && str != new_str) {
                 var id = $(this).parent('tr').attr('_id');
-                $.post('es.php?action=update', { 'host': host + '/' + index + '/' + type, 'id': id, 'field': field, 'value': new_str }, function (r) {
+                $.post('es.php?action=update', { 'host': fullhost, 'id': id, 'field': field, 'value': new_str }, function (r) {
                     if (r.result != 'updated') {
                         alert('更新失败');
                         return false;
@@ -260,11 +261,12 @@
 
     function showTitle() {
         var html = host + ' -> ' + index + ' -> ' + type;
+        fullhost = host + '/' + index + '/' + type;
         $('.content_title').html(html);
     }
 
     function showQuery() {
-        $.post('es.php?action=getQuery', { 'host': host + '/' + index + '/' + type, 'search': searchStr, 'select': selectFields, 'sort': sortStr, 'page': currentPage }, function (res) {
+        $.post('es.php?action=getQuery', { 'host': fullhost, 'search': searchStr, 'select': selectFields, 'sort': sortStr, 'page': currentPage }, function (res) {
             r = res.result;
             var title = '<thead><tr>';
             for (var thead in r['lists'][0]) {
