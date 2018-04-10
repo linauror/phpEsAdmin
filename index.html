@@ -266,20 +266,19 @@
     }
 
     function showQuery() {
+        var fields = mapping[index][type];
         $.post('es.php?action=getQuery', { 'host': fullhost, 'search': searchStr, 'select': selectFields, 'sort': sortStr, 'page': currentPage }, function (res) {
             r = res.result;
             var title = '<thead><tr>';
-            for (var thead in r['lists'][0]) {
-                if (thead == '_id') continue;
-                title += '<td>' + thead + '</td>';
+            for (var field in fields) {
+                title += '<td>' + field + '</td>';
             }
             title += '</tr></thead>';
             var html = title + '<tbody>';
             $(r.lists).each(function (x, y) {
                 html += '<tr _id="' + y['_id'] + '">';
-                for (var field in y) {
-                    if (field == '_id') continue;
-                    html += '<td>' + y[field] + '</td>';
+                for (var field in fields) {
+                    html += '<td>' + (y[field] == undefined ? '' : y[field]) + '</td>';
                 }
                 html += '</tr>';
             })
