@@ -126,7 +126,7 @@
             index = $(this).parent('dl').find('dt').html();
             type = $(this).html();
             showTitle();
-            selectNav($('#nav_fields'))
+            selectNav($('#nav_fields'), true)
         })
 
         $('#hosts').change(function () {
@@ -135,7 +135,7 @@
         })
 
         $('.content_nav').on('click', 'li', function () {
-            selectNav($(this));
+            selectNav($(this), true);
         })
 
         $('#search_box .submit').click(function () {
@@ -163,7 +163,7 @@
                 sortStr = $('.sortField').val() + ',' + $('.sortBy').val();
             }
 
-            selectNav($('#nav_query'));
+            selectNav($('#nav_query'), false);
         })
 
         $('#dsl_box .submit').click(function () {
@@ -308,7 +308,7 @@
         $('#search_box .selectFieldsBox div').html(fieldsStr);
     }
 
-    function selectNav(navObj) {
+    function selectNav(navObj, clear) {
         var nav = $(navObj).attr('nav');
         $(navObj).addClass('hover').siblings().removeClass('hover');
         $('#' + nav + '_box').show().siblings().hide();
@@ -324,11 +324,13 @@
         }
 
         // 重置搜索条件
-        searchStr = '';
-        selectFields = '';
-        sortStr = '';
-        currentPage = 1;
-        $('#query_box .rawRequestBox pre,#query_box .rawResultBox pre').hide();
+        if (clear == true) {
+            searchStr = '';
+            selectFields = '';
+            sortStr = '';
+            currentPage = 1;
+            $('#query_box .rawRequestBox pre,#query_box .rawResultBox pre').hide();
+        }
     }
 
     function goPage(p) {
